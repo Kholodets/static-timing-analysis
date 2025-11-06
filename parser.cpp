@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "netlist.h"
 #include "lut.h"
@@ -57,7 +58,10 @@ int main(int argc, char **argv)
 
 	if (mode == READ_CKT) {
 		netlist_t netl;
+		clock_t start = clock();
 		build_netlist(&netl, input);
+		clock_t fin = clock();
+		fprintf(stderr, "parsing took %f ms\n", ((float) (fin - start)) / (CLOCKS_PER_SEC / 1000.0));
 		print_netlist(&netl, stdout);
 		free_netlist(&netl);
 	}

@@ -8,6 +8,61 @@
 
 #define BUFS 1024
 
+double interpolate(double y, double x, double *idx1, double *idx2, double *table)
+{
+	int xdx = 0;
+	int ydx = 0;
+	while (y > idx1[ydx] && xdx < 7) {
+		ydx++;
+	}
+
+	while (x > idx2[xdx] && xdx < 7) {
+		xdx++;
+	}
+
+	if (xdx == 0 || xdx == 7 || ydx == 0 || ydx == 7) {
+		fprintf(stderr, "could not interpolate\n");
+		return 0;
+	}
+
+	double y1 = idx1[ydx - 1], y2 = idx1[ydx], x1 = idx1[xdx - 1], x2 = idx1[xdx];
+	double v11 = table[7 * (ydx - 1) + (xdx - 1)],
+		v12 = table[7 * (ydx - 1) + (xdx)],
+		v21 = table[7 * (ydx) + (xdx - 1)],
+		v22 = table[7 * (ydx) + (xdx)];
+	
+	double v = (v11 * (x2 - x) * (y2 - y) + v12 * (x - x1) * (y2 - y) + v21 * (x2 - x) * (y - y1) + v22 * (x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1));
+	return v;
+}
+
+
+
+
+
+void calc_out(net_t *net, double cap_out, lut_t *lut)
+{
+	double *delay_lut = lut->delays[net->type];
+	double *slew_lut = lut->slews[net->type];
+
+	double max_d = net->arr_in[0];
+	int d_idx = 0;
+
+	for (int = 1; i < net->arr_in.size(); i++) {
+		double d = net->arr_in[i] + interpolate(net->tau_in[i], cap_out, lut->tau_in, lut->cload, delay_lut);
+		if (d > max_d) {
+			max_d = d;
+			d_idx = i;
+		}
+	}
+
+	double slew_out = interpolate(net->tau_in[d_idx], cap_out, lut->tau_in, lut->cload, slew_lut);
+	net->tau_out = slew_out;
+	net->arr_out = max_d;
+}
+
+
+
+
 void build_netlist(netlist_t *net, FILE *input)
 {
 	char buf[BUFS];
@@ -40,10 +95,13 @@ void build_netlist(netlist_t *net, FILE *input)
 			}
 
 			nn->type = tok;
-			if (net->counts.contains(tok)) {
-				net->counts[tok]++;
-			} else {
-				net->counts[tok] = 1;
+			int is_dff = !strncmp(tok, "DFF", 4);
+			if (!is_dff) {
+				if (net->counts.contains(tok)) {
+					net->counts[tok]++;
+				} else {
+					net->counts[tok] = 1;
+				}
 			}
 
 			//printf("adding net with id %d, type %s, and fanin ", id, tok);
@@ -66,6 +124,30 @@ void build_netlist(netlist_t *net, FILE *input)
 				inn->fanout.push_back(id);
 				//printf("%d", inid);
 			}
+
+			//if its a DFF, we want to split it
+			if (is_dff) {
+				//it should only have one fanin, which should be set as an output
+				net_t *din = net->nl[nn->fanin[0]];
+				din->outp = 1;
+
+				if (net->counts.contains("OUTP"))
+					net->counts["OUTP"]++;
+				else
+					net->counts["OUTP"] = 1;
+
+				net->outputs.push_back(din->id);
+
+				//the net should be reclassified as an input
+				nn->type = "INP";
+				if (net->counts.contains("INP"))
+					net->counts["INP"]++;
+				else
+					net->counts["INP"] = 1;
+				net->inputs.push_back(nn->id);
+
+			}
+
 			//printf("\n");
 
 		} else { //input/output statement
@@ -88,6 +170,7 @@ void build_netlist(netlist_t *net, FILE *input)
 				} else {
 					net->counts["OUTP"] = 1;
 				}
+				net->outputs.push_back(id);
 
 			} else if (!strncmp(tok, "INPUT", 5)) {
 				tok = strtok_r(NULL, delimit, &saveptr);
@@ -108,6 +191,7 @@ void build_netlist(netlist_t *net, FILE *input)
 				} else {
 					net->counts["INP"] = 1;
 				}
+				net->inputs.push_back(id);
 
 			}
 		}
@@ -139,18 +223,19 @@ void print_netlist(netlist_t *netl, FILE *output)
 		fprint_net(output, net);
 		fprintf(output, ": ");
 		if (net->outp) {
-			fprintf(output, "OUTP");
-		} else {
-			for (int i = 0; i < net->fanout.size(); ++i) {
-				if (i) {
-					fprintf(output, ", ");
-				}
-				int outid = net->fanout[i];
-				if (netl->nl.contains(outid)) {
-					fprint_net(output, netl->nl[outid]);
-				}
+			fprintf(output, "OUTP; ");
+		}
+		
+		for (int i = 0; i < net->fanout.size(); ++i) {
+			if (i) {
+				fprintf(output, ", ");
+			}
+			int outid = net->fanout[i];
+			if (netl->nl.contains(outid)) {
+				fprint_net(output, netl->nl[outid]);
 			}
 		}
+		
 		fprintf(output, "\n");
 	}
 

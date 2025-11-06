@@ -1,5 +1,6 @@
 #pragma once
 #include <unordered_map>
+#include <flat_map>
 #include <vector>
 #include <string>
 #include <stdio.h>
@@ -18,6 +19,8 @@ typedef struct
 {
 	std::unordered_map<int, net_t *> nl;
 	std::unordered_map<std::string, int> counts;
+	std::vector<int> inputs;
+	std::vector<int> outputs;
 } netlist_t;
 
 

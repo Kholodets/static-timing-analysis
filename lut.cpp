@@ -155,6 +155,7 @@ void build_lut(lut_t *lut, FILE *input)
 		lut->names.push_back(name);
 		lut->delays[name] = delays;
 		lut->slews[name] = slews;
+		lut->caps[name] = cap;
 
 
 	}

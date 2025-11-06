@@ -10,6 +10,7 @@ typedef struct
 	
 	std::unordered_map<std::string, double *> delays;
 	std::unordered_map<std::string, double *> slews;
+	std::unordered_map<std::string, double> caps;
 
 	double *tau_in;
 	double *cload;
