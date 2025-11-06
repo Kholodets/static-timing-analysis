@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "netlist.h"
+#include "lut.h"
 
 //constant definitions
 #define READ_CKT 0
@@ -54,8 +55,20 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	netlist_t netl;
-	build_netlist(&netl, input);
+	if (mode == READ_CKT) {
+		netlist_t netl;
+		build_netlist(&netl, input);
+		print_netlist(&netl, stdout);
+		free_netlist(&netl);
+	}
+
+	if (mode == READ_SLEWS || mode == READ_DELAYS) {
+		lut_t lut;
+		printf("lut time\n");
+		build_lut(&lut, input);
+		fprint_lut(stdout, &lut, mode == READ_SLEWS ? 1 : 0);
+		free_lut(&lut);
+	}
 
 
 	if (fclose(input)) {
