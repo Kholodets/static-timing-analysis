@@ -18,6 +18,7 @@
 #define READ_CKT 0
 #define READ_SLEWS 1
 #define READ_DELAYS 2
+#define TRAVERSE 3
 
 int main(int argc, char **argv)
 {
@@ -41,8 +42,7 @@ int main(int argc, char **argv)
 		}
 		--argc, ++argv;
 	} else {
-		fprintf(stderr, "improper usage\n");
-		return 1;
+		mode = TRAVERSE;
 	}
 
 	if (!argc) {
@@ -51,6 +51,7 @@ int main(int argc, char **argv)
 	}
 
 	FILE *input = fopen(*argv, "r");
+	--argc, ++argv;
 	if (input == NULL) {
 		perror("Failed to open input file");
 		return 1;
@@ -68,10 +69,34 @@ int main(int argc, char **argv)
 
 	if (mode == READ_SLEWS || mode == READ_DELAYS) {
 		lut_t lut;
-		printf("lut time\n");
 		build_lut(&lut, input);
 		fprint_lut(stdout, &lut, mode == READ_SLEWS ? 1 : 0);
 		free_lut(&lut);
+	}
+
+	if (mode == TRAVERSE) {
+		FILE *ckt = fopen(*argv, "r");
+		--argc, ++argv;
+		if (input == NULL) {
+			perror("failed to open ckt file");
+		}
+		netlist_t netl;
+		lut_t lut;
+		build_lut(&lut, input);
+		build_netlist(&netl, ckt);
+		
+		printf("built netlist\n");
+		double max_delay = all_delays(&netl, &lut);
+		printf("Circuit delay: %.2lf ps\n", max_delay * 1000);
+		find_slacks(&netl, max_delay);
+		printf("\nGate slacks:\n");
+		print_slacks(&netl, stdout);
+		printf("\n");
+		print_critpath(&netl, stdout);
+
+		free_lut(&lut);
+		free_netlist(&netl);
+
 	}
 
 

@@ -1,21 +1,14 @@
 #  combinational logic example "c2670"
 #-------------------------------------------------------------
 #
-#
 #  total number of lines in the netlist ..............  2670
 #  simplistically reduced equivalent fault set size =   2747
 #        lines from primary input  gates .......   233
 #        lines from primary output gates .......   140
 #        lines from interior gate outputs ......  1129
 #        lines from **   454 ** fanout stems ...  1244
-#
 #        avg_fanin  =  1.64,     max_fanin  =  5
 #        avg_fanout =  2.74,     max_fanout = 11
-#
-#
-#
-#
-#
 INPUT(1)	#... primary input
 INPUT(2)	#... primary input
 INPUT(3)	#... primary input
@@ -249,8 +242,6 @@ INPUT(2451)	#... primary input
 INPUT(2454)	#... primary input
 INPUT(2474)	#... primary input
 INPUT(2678)	#... primary input
-#
-#
 OUTPUT(169)	#... primary output
 OUTPUT(174)	#... primary output
 OUTPUT(177)	#... primary output
@@ -391,8 +382,6 @@ OUTPUT(329)	#... primary output
 OUTPUT(231)	#... primary output
 OUTPUT(308)	#... primary output
 OUTPUT(225)	#... primary output
-#
-#
 #	Output		Type	Inputs...
 #	------		----	---------
 	350 = 	buff(	452)

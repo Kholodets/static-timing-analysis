@@ -12,8 +12,8 @@ typedef struct
 	std::unordered_map<std::string, double *> slews;
 	std::unordered_map<std::string, double> caps;
 
-	double *tau_in;
-	double *cload;
+	std::unordered_map<std::string, double *> tau_in;
+	std::unordered_map<std::string, double *> cload;
 } lut_t;
 
 void build_lut(lut_t *lut, FILE *input);

@@ -1,21 +1,14 @@
 #  combinational logic example "c5315"
 #-------------------------------------------------------------
 #
-#
 #  total number of lines in the netlist ..............  5315
 #  simplistically reduced equivalent fault set size =   5350
 #        lines from primary input  gates .......   178
 #        lines from primary output gates .......   123
 #        lines from interior gate outputs ......  2184
 #        lines from **   806 ** fanout stems ...  2830
-#
 #        avg_fanin  =  1.90,     max_fanin  =  9
 #        avg_fanout =  3.51,     max_fanout = 15
-#
-#
-#
-#
-#
 INPUT(1)	#... primary input
 INPUT(4)	#... primary input
 INPUT(11)	#... primary input
@@ -194,8 +187,6 @@ INPUT(4090)	#... primary input
 INPUT(4091)	#... primary input
 INPUT(4092)	#... primary input
 INPUT(4115)	#... primary input
-#
-#
 OUTPUT(144)	#... primary output
 OUTPUT(298)	#... primary output
 OUTPUT(973)	#... primary output
@@ -319,8 +310,6 @@ OUTPUT(767)	#... primary output
 OUTPUT(807)	#... primary output
 OUTPUT(658)	#... primary output
 OUTPUT(690)	#... primary output
-#
-#
 #	Output		Type	Inputs...
 #	------		----	---------
 	144 = 	buff(	141)

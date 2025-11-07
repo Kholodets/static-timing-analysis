@@ -13,13 +13,13 @@ void build_lut(lut_t *lut, FILE *input)
 	char buf[BUFS];
 	char delimit[] = "(),\\ \";{}\t\r\n\v\f";
 	//char delimit_digit[] = "1234567890()\\, \";{}\t\r\n\v\f"
-	int got_idx = 0;
 
 	while (1) {
 		char *tok;
 		char *saveptr;
 		std::string name;
 
+		int got_idx = 0;
 		char stopwrd[64];
 		do {
 			if (fgets(buf, BUFS, input) == NULL) {
@@ -92,8 +92,8 @@ void build_lut(lut_t *lut, FILE *input)
 			}
 
 
-			lut->tau_in = tau;
-			lut->cload = load;
+			lut->tau_in[name] = tau;
+			lut->cload[name] = load;
 
 			got_idx = 1;
 		} else {
@@ -168,12 +168,12 @@ void fprint_lut(FILE *f, lut_t *lut, int snd)
 		fprintf(f, "cell, %s\n", name.c_str());
 		fprintf(f, "input slews: ");
 		for (int i = 0; i < 7; ++i) {
-			fprintf(f, "%lf%c", lut->tau_in[i], i!=6 ? ',' : '\n');
+			fprintf(f, "%lf%c", lut->tau_in[name][i], i!=6 ? ',' : '\n');
 		}
 
 		fprintf(f, "load cap: ");
 		for (int i = 0; i < 7; ++i) {
-			fprintf(f, "%lf%c", lut->cload[i], i!=6 ? ',' : '\n');
+			fprintf(f, "%lf%c", lut->cload[name][i], i!=6 ? ',' : '\n');
 		}
 
 		fprintf(f, snd ? "slews:\n" : "delays:\n");
@@ -189,11 +189,10 @@ void fprint_lut(FILE *f, lut_t *lut, int snd)
 
 void free_lut(lut_t *lut)
 {
-	free(lut->tau_in);
-	free(lut->cload);
-
 	for (std::string name : lut->names) {
 		free(lut->slews[name]);
 		free(lut->delays[name]);
+		free(lut->tau_in[name]);
+		free(lut->cload[name]);
 	}
 }
