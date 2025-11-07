@@ -58,44 +58,62 @@ int main(int argc, char **argv)
 	}
 
 	if (mode == READ_CKT) {
+		FILE *details = fopen("ckt_details.txt", "w");
+		if (details == NULL) {
+			perror("fopen ckt_details.txt");
+			exit(1);
+		}
 		netlist_t netl;
 		clock_t start = clock();
 		build_netlist(&netl, input);
 		clock_t fin = clock();
-		fprintf(stderr, "parsing took %f ms\n", ((float) (fin - start)) / (CLOCKS_PER_SEC / 1000.0));
-		print_netlist(&netl, stdout);
+		//fprintf(stderr, "parsing took %f ms\n", ((float) (fin - start)) / (CLOCKS_PER_SEC / 1000.0));
+		print_netlist(&netl, details);
 		free_netlist(&netl);
+		fclose(details);
 	}
 
 	if (mode == READ_SLEWS || mode == READ_DELAYS) {
+		FILE *details = fopen(mode == READ_SLEWS ? "slew_LUT.txt" : "delay_LUT.txt", "w");
+		if (details == NULL) {
+			perror("fopen _lut.txt");
+			exit(1);
+		}
 		lut_t lut;
 		build_lut(&lut, input);
-		fprint_lut(stdout, &lut, mode == READ_SLEWS ? 1 : 0);
+		fprint_lut(details, &lut, mode == READ_SLEWS ? 1 : 0);
 		free_lut(&lut);
+		fclose(details);
 	}
 
 	if (mode == TRAVERSE) {
 		FILE *ckt = fopen(*argv, "r");
 		--argc, ++argv;
-		if (input == NULL) {
+		if (ckt == NULL) {
 			perror("failed to open ckt file");
+		}
+		FILE *traversal = fopen("ckt_traversal.txt", "w");
+		if (traversal == NULL) {
+			perror("fopen ckt_traversal.txt");
+			exit(1);
 		}
 		netlist_t netl;
 		lut_t lut;
 		build_lut(&lut, input);
 		build_netlist(&netl, ckt);
 		
-		printf("built netlist\n");
 		double max_delay = all_delays(&netl, &lut);
-		printf("Circuit delay: %.2lf ps\n", max_delay * 1000);
+		fprintf(traversal, "Circuit delay: %.2lf ps\n", max_delay * 1000);
 		find_slacks(&netl, max_delay);
-		printf("\nGate slacks:\n");
-		print_slacks(&netl, stdout);
-		printf("\n");
-		print_critpath(&netl, stdout);
+		fprintf(traversal, "\nGate slacks:\n");
+		print_slacks(&netl, traversal);
+		fprintf(traversal, "\nCritical path:\n");
+		print_critpath(&netl, traversal);
 
 		free_lut(&lut);
 		free_netlist(&netl);
+		fclose(traversal);
+		fclose(ckt);
 
 	}
 

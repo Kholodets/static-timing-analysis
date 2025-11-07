@@ -27,10 +27,12 @@ double interpolate(double y, double x, double *idx1, double *idx2, double *table
 
 	if (xdx == 7) {
 		xdx = 6;
+		x = idx2[6];
 		fprintf(stderr, "Load capacitance %lf out of bounds (high) for gate %d\n", x, id); 
 	}
 	if (ydx == 7) {
 		ydx = 6;
+		y = idx1[6];
 		fprintf(stderr, "Input slew %lf out of bounds (high) for gate %d\n", y, id); 
 	}
 
@@ -76,7 +78,7 @@ void calc_out(net_t *net, double cap_out, lut_t *lut)
 	double max_d = 0;
 	int d_idx = 0;
 
-	double mod = net->arr_in.size() > 2 ? net->arr_in.size() / 2 : 1;
+	double mod = net->arr_in.size() > 2 ? net->arr_in.size() / 2.0 : 1;
 	
 	for (int i = 0; i < net->arr_in.size(); i++) {
 		//fprintf(stderr, "interpolating delays, i = %d, sizeof tau_in %d\n", i, net->tau_in.size());
@@ -131,7 +133,7 @@ double all_delays(netlist_t *net, lut_t *lut)
 			n->in_count = 0;
 		}
 
-		//fprintf(stderr, "arrival time == %lf\n", n->arr_out * 1000);
+		//fprintf(stderr, "idx == %d, type == %s, arrival time == %.2lf\n", id, n->type.c_str(), n->arr_out * 1000);
 
 		for (int oid : n->fanout) {
 			net_t *no = net->nl[oid];
@@ -322,7 +324,7 @@ void build_netlist(netlist_t *net, FILE *input)
 					net->counts["INP"]++;
 				else
 					net->counts["INP"] = 1;
-				nn->arr_out = 0;
+				nn->arr_out = 0.0;
 				nn->tau_out = 0.002;
 				nn->processed = 1;
 				net->inputs.push_back(nn->id);
@@ -378,7 +380,7 @@ void build_netlist(netlist_t *net, FILE *input)
 				} else {
 					net->counts["INP"] = 1;
 				}
-				inn->arr_out = 0;
+				inn->arr_out = 0.0;
 				inn->tau_out = 0.002;
 				inn->processed = 1;
 				net->inputs.push_back(id);
@@ -405,7 +407,7 @@ void print_netlist(netlist_t *netl, FILE *output)
 		}
 	}
 	//print fanout
-	fprintf(output, "Fanout...\n");
+	fprintf(output, "\nFanout...\n");
 	for (const auto & [id, net] : netl->nl) {
 		if (net->type == "INP") {
 			continue;
@@ -430,7 +432,7 @@ void print_netlist(netlist_t *netl, FILE *output)
 	}
 
 	//print fanin
-	fprintf(output, "Fanin...\n");
+	fprintf(output, "\nFanin...\n");
 	for (const auto & [id, net] : netl->nl) {
 		if (net->type == "INP") {
 			continue;
